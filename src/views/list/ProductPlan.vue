@@ -103,12 +103,25 @@
         </span>
       </s-table>
 
+      <div class="table-operator">
+        <a-button type="primary" icon="plus" @click="handleAddInsurance">新建</a-button>
+        <a-dropdown v-action:edit v-if="selectedRowKeys.length > 0">
+          <a-menu slot="overlay">
+            <a-menu-item key="1"><a-icon type="delete" />删除</a-menu-item>
+            <!-- lock | unlock -->
+            <a-menu-item key="2"><a-icon type="lock" />锁定</a-menu-item>
+          </a-menu>
+          <a-button style="margin-left: 8px">
+            批量操作 <a-icon type="down" />
+          </a-button>
+        </a-dropdown>
+      </div>
       <s-table
-        ref="table"
+        ref="productTable"
         size="default"
         rowKey="key"
         :columns="productColumns"
-        :data="loadData"
+        :data="loadProductData"
         :alert="true"
         :rowSelection="rowSelection"
         showPagination="auto"
@@ -125,18 +138,26 @@
 
         <span slot="action" slot-scope="text, record">
           <template>
-            <a @click="handleEdit(record)">修改</a>
+            <a @click="handleEditInsurance(record)">修改</a>
           </template>
         </span>
       </s-table>
 
-      <create-form
+      <create-form-plan
         ref="createModal"
         :visible="visible"
         :loading="confirmLoading"
         :model="mdl"
         @cancel="handleCancel"
         @ok="handleOk"
+      />
+      <create-insurance
+        ref="createModalInsurance"
+        :visible="insuranceVisible"
+        :loading="confirmLoading"
+        :model="mdlInsurance"
+        @cancel="handleInsuranceCancel"
+        @ok="handleInsuranceOk"
       />
       <step-by-step-modal ref="modal" @ok="handleOk"/>
     </a-card>
@@ -149,7 +170,8 @@ import { STable, Ellipsis } from '@/components'
 import { getRoleList, getServiceList } from '@/api/manage'
 
 import StepByStepModal from './modules/StepByStepModal'
-import CreateForm from './modules/CreateForm'
+import CreateFormPlan from './modules/CreateFormPlan'
+import CreateInsurance from './modules/CreateInsurance'
 
 const columns = [
   {
@@ -229,13 +251,13 @@ const productColumns = [
     title: '固定保费',
     dataIndex: 'updatedAt',
     sorter: true
+  },
+  {
+    title: '操作',
+    dataIndex: 'action',
+    width: '150px',
+    scopedSlots: { customRender: 'action' }
   }
-  // {
-  //   title: '操作',
-  //   dataIndex: 'action',
-  //   width: '150px',
-  //   scopedSlots: { customRender: 'action' }
-  // }
 ]
 
 const statusMap = {
@@ -262,8 +284,9 @@ export default {
   components: {
     STable,
     Ellipsis,
-    CreateForm,
-    StepByStepModal
+    CreateFormPlan,
+    StepByStepModal,
+    CreateInsurance
   },
   data () {
     this.columns = columns
@@ -271,8 +294,10 @@ export default {
     return {
       // create model
       visible: false,
+      insuranceVisible: false,
       confirmLoading: false,
       mdl: null,
+      mdlInsurance: null,
       // 高级搜索 展开/关闭
       advanced: false,
       // 查询参数
@@ -280,6 +305,16 @@ export default {
       // 加载数据方法 必须为 Promise 对象
       loadData: parameter => {
         const requestParameters = Object.assign({}, parameter, this.queryParam)
+        console.log('loadData request parameters:', requestParameters)
+        return getServiceList(requestParameters)
+          .then(res => {
+            return res.result
+          })
+      },
+      // 查询参数
+      queryProductParam: {},
+      loadProductData: parameter => {
+        const requestParameters = Object.assign({}, parameter, this.queryProductParam)
         console.log('loadData request parameters:', requestParameters)
         return getServiceList(requestParameters)
           .then(res => {
@@ -314,9 +349,17 @@ export default {
       this.mdl = null
       this.visible = true
     },
+    handleAddInsurance () {
+      this.mdlInsurance = null
+      this.insuranceVisible = true
+    },
     handleEdit (record) {
       this.visible = true
       this.mdl = { ...record }
+    },
+    handleEditInsurance (record) {
+      this.insuranceVisible = true
+      this.mdlInsurance = { ...record }
     },
     handleOk () {
       const form = this.$refs.createModal.form
@@ -362,11 +405,59 @@ export default {
         }
       })
     },
+    handleInsuranceOk () {
+      const insuranceForm = this.$refs.createModalInsurance.form
+      this.confirmLoading = true
+      insuranceForm.validateFields((errors, values) => {
+        if (!errors) {
+          console.log('values', values)
+          if (values.id > 0) {
+            // 修改 e.g.
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                resolve()
+              }, 1000)
+            }).then(res => {
+              this.insuranceVisible = false
+              this.confirmLoading = false
+              // 重置表单数据
+              insuranceForm.resetFields()
+              // 刷新表格
+              this.$refs.productTable.refresh()
+
+              this.$message.info('修改成功')
+            })
+          } else {
+            // 新增
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                resolve()
+              }, 1000)
+            }).then(res => {
+              this.insuranceVisible = false
+              this.confirmLoading = false
+              // 重置表单数据
+              insuranceForm.resetFields()
+              // 刷新表格
+              this.$refs.productTable.refresh()
+
+              this.$message.info('新增成功')
+            })
+          }
+        } else {
+          this.confirmLoading = false
+        }
+      })
+    },
     handleCancel () {
       this.visible = false
-
       const form = this.$refs.createModal.form
       form.resetFields() // 清理表单数据（可不做）
+    },
+    handleInsuranceCancel () {
+      this.insuranceVisible = false
+      const insuranceForm = this.$refs.createModalInsurance.form
+      insuranceForm.resetFields() // 清理表单数据（可不做）
     },
     handleSub (record) {
       if (record.status !== 0) {
