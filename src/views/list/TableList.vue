@@ -6,12 +6,12 @@
           <a-row :gutter="48">
             <a-col :md="8" :sm="24">
               <a-form-item label="代码">
-                <a-input v-model="queryParam.id" placeholder=""/>
+                <a-input v-model="queryParam.riskCode" placeholder=""/>
               </a-form-item>
             </a-col>
             <a-col :md="8" :sm="24">
               <a-form-item label="名称">
-                <a-input-number v-model="queryParam.callNo" style="width: 100%"/>
+                <a-input-number v-model="queryParam.riskName" style="width: 100%"/>
               </a-form-item>
             </a-col>
             <template v-if="advanced">
@@ -127,45 +127,37 @@ import CreateForm from './modules/CreateForm'
 const columns = [
   {
     title: '险种ID',
+    dataIndex: 'riskId',
     scopedSlots: { customRender: 'serial' }
   },
   {
     title: '代码',
-    dataIndex: 'no'
+    dataIndex: 'riskCode'
   },
   {
     title: '名称',
-    dataIndex: 'callNo',
-    sorter: true,
-    needTotal: true,
-    customRender: (text) => text + ' 次'
+    dataIndex: 'riskName'
   },
   {
     title: '主险标志',
-    dataIndex: 'status',
-    scopedSlots: { customRender: 'status' }
+    dataIndex: 'mainRiskType'
   },
   {
     title: '寿险风险倍数',
-    dataIndex: 'description',
-    scopedSlots: { customRender: 'description' }
+    dataIndex: 'lifeInsurRiskMul'
   },
   {
     title: '意外险风险倍数',
-    dataIndex: 'updatedAt',
+    dataIndex: 'accidentRiskMul',
     sorter: true
   },
   {
     title: '重疾风险倍数',
-    dataIndex: 'action',
-    width: '150px',
-    scopedSlots: { customRender: 'action' }
+    dataIndex: 'sickInsurRiskMul'
   },
   {
     title: '住院津贴',
-    dataIndex: 'action',
-    width: '150px',
-    scopedSlots: { customRender: 'action' }
+    dataIndex: 'hospitalizaBenefit'
   },
   {
     title: '操作',
@@ -194,6 +186,35 @@ const statusMap = {
   }
 }
 
+const mockListData = {
+  'code': 200, // 状态码，200：请求成功，其他：请求出错
+  'msg': null, // 错误消息，成功返回 null, 否则返回出错信息
+  'data': [
+    {// 返回请求数据，JSON 数据格式
+      'riskSerialNum': '100011', // 流水号  主键
+      'riskId': 'ID10012', // 险种ID
+      'riskCode': 'MII', // 险种代码
+      'riskName': 'AA', // 险种名称
+      'mainRiskType': 'Y', // 主险标志
+      'lifeInsurRiskMul': '1', // 寿险风险等级
+      'accidentRiskMul': '1', // 意外险风险倍数
+      'sickInsurRiskMul': '2', // 重疾险风险倍数
+      'hospitalizaBenefit': '2' // 住院津贴
+    },
+    { // 返回请求数据，JSON 数据格式
+      'riskSerialNum': '100012', // 流水号  主键
+      'riskId': 'ID10013', // 险种ID
+      'riskCode': 'LTA', // 险种代码
+      'riskName': '尊享优选', // 险种名称
+      'mainRiskType': 'N', // 主险标志
+      'lifeInsurRiskMul': '1', // 寿险风险等级
+      'accidentRiskMul': '2', // 意外险风险倍数
+      'sickInsurRiskMul': '1', // 重疾险风险倍数
+      'hospitalizaBenefit': '2' // 住院津贴
+    }
+  ]
+}
+
 export default {
   name: 'TableList',
   components: {
@@ -219,7 +240,8 @@ export default {
         console.log('loadData request parameters:', requestParameters)
         return getServiceList(requestParameters)
           .then(res => {
-            return res.result
+            console.log('res', res)
+            return mockListData
           })
       },
       selectedRowKeys: [],

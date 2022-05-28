@@ -6,56 +6,27 @@
           <a-row :gutter="48">
             <a-col :md="8" :sm="24">
               <a-form-item label="代码">
-                <a-input v-model="queryParam.id" placeholder=""/>
+                <a-input v-model="queryParam.productCode" placeholder=""/>
               </a-form-item>
             </a-col>
             <a-col :md="8" :sm="24">
               <a-form-item label="名称">
-                <a-input-number v-model="queryParam.callNo" style="width: 100%"/>
+                <a-input-number v-model="queryParam.productName" style="width: 100%"/>
               </a-form-item>
             </a-col>
             <a-col :md="8" :sm="24">
-              <a-form-item label="使用状态">
-                <a-select v-model="queryParam.status" placeholder="请选择" default-value="0">
+              <a-form-item label="销售状态">
+                <a-select v-model="queryParam.saleStateId" placeholder="请选择" default-value="0">
                   <a-select-option value="0">全部</a-select-option>
                   <a-select-option value="1">关闭</a-select-option>
                   <a-select-option value="2">运行中</a-select-option>
                 </a-select>
               </a-form-item>
             </a-col>
-            <template v-if="advanced">
-              <a-col :md="8" :sm="24">
-                <a-form-item label="更新日期">
-                  <a-date-picker v-model="queryParam.date" style="width: 100%" placeholder="请输入更新日期"/>
-                </a-form-item>
-              </a-col>
-              <a-col :md="8" :sm="24">
-                <a-form-item label="使用状态">
-                  <a-select v-model="queryParam.useStatus" placeholder="请选择" default-value="0">
-                    <a-select-option value="0">全部</a-select-option>
-                    <a-select-option value="1">关闭</a-select-option>
-                    <a-select-option value="2">运行中</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-              <a-col :md="8" :sm="24">
-                <a-form-item label="使用状态">
-                  <a-select placeholder="请选择" default-value="0">
-                    <a-select-option value="0">全部</a-select-option>
-                    <a-select-option value="1">关闭</a-select-option>
-                    <a-select-option value="2">运行中</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-            </template>
             <a-col :md="!advanced && 8 || 24" :sm="24">
               <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
                 <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
                 <a-button style="margin-left: 8px" @click="() => this.queryParam = {}">重置</a-button>
-                <a @click="toggleAdvanced" style="margin-left: 8px">
-                  {{ advanced ? '收起' : '展开' }}
-                  <a-icon :type="advanced ? 'up' : 'down'"/>
-                </a>
               </span>
             </a-col>
           </a-row>
@@ -84,6 +55,7 @@
         :data="loadData"
         :alert="true"
         :rowSelection="rowSelection"
+        :customRow="rowClick"
         showPagination="auto"
       >
         <span slot="serial" slot-scope="text, record, index">
@@ -174,33 +146,34 @@ import CreateFormPlan from './modules/CreateFormPlan'
 import CreateInsurance from './modules/CreateInsurance'
 
 const columns = [
+  // {
+  //   title: '产品主键',
+  //   dataIndex: 'productSerialNum'
+  // },
   {
     title: '代码',
-    dataIndex: 'no',
-    scopedSlots: { customRender: 'serial' }
+    dataIndex: 'productCode'
   },
   {
     title: '名称',
-    dataIndex: 'callNo',
-    sorter: true,
-    needTotal: true,
-    customRender: (text) => text + ' 次'
+    dataIndex: 'productName',
+    sorter: true
   },
   {
     title: '销售状态',
-    dataIndex: 'status',
-    scopedSlots: { customRender: 'status' }
+    dataIndex: 'saleStateName',
+    scopedSlots: { customRender: 'saleStateName' }
   },
   {
     title: '创建人',
-    dataIndex: 'description',
-    scopedSlots: { customRender: 'description' }
+    dataIndex: 'creater',
+    scopedSlots: { customRender: 'creater' }
   },
-  {
-    title: '投保单号剩余量',
-    dataIndex: 'updatedAt',
-    sorter: true
-  },
+  // {
+  //   title: '投保单号剩余量',
+  //   dataIndex: 'updatedAt',
+  //   sorter: true
+  // },
   {
     title: '操作',
     dataIndex: 'action',
@@ -212,44 +185,38 @@ const columns = [
 const productColumns = [
   {
     title: '险种编码',
-    dataIndex: 'no',
-    scopedSlots: { customRender: 'serial' }
+    dataIndex: 'riskCode'
   },
   {
     title: '险种名称',
-    dataIndex: 'callNo',
-    sorter: true,
-    needTotal: true,
-    customRender: (text) => text + ' 次'
+    dataIndex: 'riskName'
   },
   {
     title: '主险标志',
-    dataIndex: 'status',
-    scopedSlots: { customRender: 'status' }
+    dataIndex: 'mainRiskType',
+    scopedSlots: { customRender: 'mainRiskType' }
   },
   {
     title: '交费期间',
-    dataIndex: 'description',
-    scopedSlots: { customRender: 'description' }
+    dataIndex: 'paymentPeriod',
+    scopedSlots: { customRender: 'paymentPeriod' }
   },
   {
     title: '保额类型',
-    dataIndex: 'updatedAt',
-    sorter: true
+    dataIndex: 'insurAmountType'
   },
   {
     title: '固定保额',
-    dataIndex: 'updatedAt',
-    sorter: true
+    dataIndex: 'fixInsurAmount'
   },
   {
     title: '保额比例',
-    dataIndex: 'updatedAt',
+    dataIndex: 'proInsurAmount',
     sorter: true
   },
   {
     title: '固定保费',
-    dataIndex: 'updatedAt',
+    dataIndex: 'fixPremium',
     sorter: true
   },
   {
@@ -277,6 +244,112 @@ const statusMap = {
     status: 'error',
     text: '异常'
   }
+}
+
+const mockListData = {
+  'code': 200, // 状态码，200：请求成功，其他：请求出错
+  'msg': null, // 错误消息，成功返回 null, 否则返回出错信息
+  'data': [
+    {// 返回请求数据，JSON 数据格式
+      'productSerialNum': '110011', // 产品主键  主键
+      'productCode': 'MII', // 产品代码
+      'productName': 'AA', // 产品名称
+      'saleStateName': 'CCDD', // 销售状态名称
+      'creater': '张三', // 创建
+      'riskList': [
+        {
+          'riskSerialNum': '100012', // 险种主键
+          'riskCode': 'LTA', // 险种代码
+          'riskName': '尊享优选', // 险种名称
+          'mainRiskType': 'N', // 主险标志
+          'insurPeriod': '1', // 保险期间
+          'paymentPeriod': '2', // 交费期间
+          'insurAmountType': '1', // 保额类型
+          'fixInsurAmount': '3000000000', // 固定保费
+          'proInsurAmount': '2', // 保额比例
+          'fixPremium': '5000000000' // 固定保额
+        },
+        {
+          'riskSerialNum': '100013', // 险种主键
+          'riskCode': 'MTL', // 险种代码
+          'riskName': '尊享惠选', // 险种名称
+          'mainRiskType': 'N', // 主险标志
+          'insurPeriod': '1', // 保险期间
+          'paymentPeriod': '2', // 交费期间
+          'insurAmountType': '1', // 保额类型
+          'fixInsurAmount': '2000000', // 固定保费
+          'proInsurAmount': '2', // 保额比例
+          'fixPremium': '2000000000' // 固定保额
+        }
+      ]
+    },
+    {// 返回请求数据，JSON 数据格式
+      'productSerialNum': '110012', // 产品主键  主键
+      'productCode': 'MIIqq', // 产品代码
+      'productName': 'AAdsfgh', // 产品名称
+      'saleStateName': 'CCDD', // 销售状态名称
+      'creater': '李四', // 创建
+      'riskList': [
+        {
+          'riskSerialNum': '100016', // 险种主键
+          'riskCode': 'LTAQQ', // 险种代码
+          'riskName': '史蒂夫规划', // 险种名称
+          'mainRiskType': 'N', // 主险标志
+          'insurPeriod': '1', // 保险期间
+          'paymentPeriod': '2', // 交费期间
+          'insurAmountType': '1', // 保额类型
+          'fixInsurAmount': '3000000000', // 固定保费
+          'proInsurAmount': '2', // 保额比例
+          'fixPremium': '5000000000' // 固定保额
+        },
+        {
+          'riskSerialNum': '100017', // 险种主键
+          'riskCode': 'MTL', // 险种代码
+          'riskName': '尊享惠选', // 险种名称
+          'mainRiskType': 'N', // 主险标志
+          'insurPeriod': '1', // 保险期间
+          'paymentPeriod': '2', // 交费期间
+          'insurAmountType': '1', // 保额类型
+          'fixInsurAmount': '2000000', // 固定保费
+          'proInsurAmount': '2', // 保额比例
+          'fixPremium': '2000000000' // 固定保额
+        }
+      ]
+    },
+    {// 返回请求数据，JSON 数据格式
+      'productSerialNum': '110013', // 产品主键  主键
+      'productCode': 'DFCMII', // 产品代码
+      'productName': 'A士大夫A', // 产品名称
+      'saleStateName': 'CCDD', // 销售状态名称
+      'creater': '刘武', // 创建
+      'riskList': [
+        {
+          'riskSerialNum': '100018', // 险种主键
+          'riskCode': 'LTA', // 险种代码
+          'riskName': '尊享优选时代', // 险种名称
+          'mainRiskType': 'N', // 主险标志
+          'insurPeriod': '1', // 保险期间
+          'paymentPeriod': '2', // 交费期间
+          'insurAmountType': '1', // 保额类型
+          'fixInsurAmount': '3000000000', // 固定保费
+          'proInsurAmount': '2', // 保额比例
+          'fixPremium': '5000000000' // 固定保额
+        },
+        {
+          'riskSerialNum': '100019', // 险种主键
+          'riskCode': 'MTL', // 险种代码
+          'riskName': '尊享惠选地方放', // 险种名称
+          'mainRiskType': 'N', // 主险标志
+          'insurPeriod': '1', // 保险期间
+          'paymentPeriod': '2', // 交费期间
+          'insurAmountType': '1', // 保额类型
+          'fixInsurAmount': '2000000', // 固定保费
+          'proInsurAmount': '2', // 保额比例
+          'fixPremium': '2000000000' // 固定保额
+        }
+      ]
+    }
+  ]
 }
 
 export default {
@@ -308,7 +381,8 @@ export default {
         console.log('loadData request parameters:', requestParameters)
         return getServiceList(requestParameters)
           .then(res => {
-            return res.result
+            console.log('productList--', res)
+            return mockListData
           })
       },
       // 查询参数
@@ -318,7 +392,8 @@ export default {
         console.log('loadData request parameters:', requestParameters)
         return getServiceList(requestParameters)
           .then(res => {
-            return res.result
+            console.log('productList--', res)
+            return mockListData
           })
       },
       selectedRowKeys: [],
@@ -360,6 +435,45 @@ export default {
     handleEditInsurance (record) {
       this.insuranceVisible = true
       this.mdlInsurance = { ...record }
+    },
+    getProductData (record) {
+      console.log('record----', record)
+      const temp = {
+        'code': 200, // 状态码，200：请求成功，其他：请求出错
+        'msg': null, // 错误消息，成功返回 null, 否则返回出错信息
+        'data': record.riskList
+        // 'pageNo': 1,
+        // 'pageSize': 10,
+        // 'totalPage': 100,
+        // 'key': 1,
+        // 'next': 1
+      }
+
+      this.loadProductData = { ...temp }
+      console.log('this.loadProductData-----', this.loadProductData)
+      console.log('this.$refs.productTable-----', this.$refs.productTable)
+      this.$refs.productTable.data = parameter => {
+        const requestParameters = Object.assign({}, parameter, this.queryParam)
+        return getServiceList(requestParameters)
+          .then(res => {
+            console.log('productList--', temp)
+            return temp
+          })
+      }
+      this.$refs.productTable.refresh()
+    },
+    rowClick (record, index) {
+      return {
+        on: {
+          click: () => {
+            console.log('点了我')
+          },
+          dblclick: () => {
+            console.log('点了我')
+            this.getProductData(record)
+          }
+        }
+      }
     },
     handleOk () {
       const form = this.$refs.createModal.form
@@ -469,6 +583,7 @@ export default {
     onSelectChange (selectedRowKeys, selectedRows) {
       this.selectedRowKeys = selectedRowKeys
       this.selectedRows = selectedRows
+      this.getProductData(selectedRows)
     },
     toggleAdvanced () {
       this.advanced = !this.advanced
