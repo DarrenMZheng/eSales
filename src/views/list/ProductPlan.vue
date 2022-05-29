@@ -116,8 +116,13 @@
       <create-insurance
         ref="createModalInsurance"
         :visible="insuranceVisible"
+        :riskFlag="riskFlag"
+        :options="options"
+        :riskCode="riskCode"
+        :riskName="riskName"
         :loading="confirmLoading"
         :model="mdlInsurance"
+        :handleChange="handleChange"
         @cancel="handleInsuranceCancel"
         @ok="handleInsuranceOk"
       />
@@ -129,7 +134,7 @@
 <script>
 import moment from 'moment'
 import { STable, Ellipsis } from '@/components'
-import { getRoleList, queryProductList, addProduct, updateProduct } from '@/api/manage'
+import { getRoleList, queryProductList, addProduct, updateProduct, queryRiskList, addProductRisk } from '@/api/manage'
 
 import StepByStepModal from './modules/StepByStepModal'
 import CreateFormPlan from './modules/CreateFormPlan'
@@ -364,6 +369,10 @@ export default {
       mdlInsurance: null,
       // 高级搜索 展开/关闭
       advanced: false,
+      options: [],
+      riskFlag: 'Y',
+      riskCode: 'Y',
+      riskName: 'Y',
       // 查询参数
       queryParam: {},
       // 加载数据方法 必须为 Promise 对象
@@ -456,6 +465,15 @@ export default {
       this.insuranceVisible = true
       this.mdlInsurance = { ...record }
     },
+    handleChange (value) {
+      this.options.forEach(item => {
+        if (item.value === value) {
+          this.riskFlag = item.mainRiskType
+          this.riskCode = item.code
+          this.riskName = item.label
+        }
+      })
+    },
     queryProduct () {
       queryProductList(this.queryParam)
       .then(res => {
@@ -465,11 +483,27 @@ export default {
         res.totalCount = res.data.length
         res.totalPage = Math.ceil(res.data.length / 10)
         this.dataList = [...res.data]
-        console.log('this.dataList------------', this.dataList)
         this.responseDataList = res.data
         this.loadData({ pageNo: 0, pageSize: 10 }).then(() => {
           this.$refs.table.refresh()
         })
+      })
+    },
+    queryRisk () {
+      queryRiskList()
+      .then(res => {
+        const riskList = res.data
+        riskList.forEach((item, index) => {
+          const temp = {
+            'value': item.riskSerialNum,
+            'label': item.riskName,
+            'mainRiskType': item.mainRiskType,
+            'key': item.riskSerialNum,
+            'code': item.riskCode
+          }
+          this.options.push(temp)
+        })
+        console.log('this.options', this.options)
       })
     },
     getProductData (record) {
@@ -550,29 +584,23 @@ export default {
       insuranceForm.validateFields((errors, values) => {
         if (!errors) {
           console.log('values', values)
-          if (values.id > 0) {
+          if (values.riskSerialNum > 0) {
             // 修改 e.g.
-            new Promise((resolve, reject) => {
-              setTimeout(() => {
-                resolve()
-              }, 1000)
-            }).then(res => {
+          addProductRisk(values)
+          .then(res => {
               this.insuranceVisible = false
               this.confirmLoading = false
               // 重置表单数据
               insuranceForm.resetFields()
               // 刷新表格
-              this.$refs.productTable.refresh()
+              this.$refs.table.refresh()
 
               this.$message.info('修改成功')
             })
           } else {
             // 新增
-            new Promise((resolve, reject) => {
-              setTimeout(() => {
-                resolve()
-              }, 1000)
-            }).then(res => {
+            addProductRisk(values)
+            .then(res => {
               this.insuranceVisible = false
               this.confirmLoading = false
               // 重置表单数据
@@ -625,6 +653,7 @@ export default {
   },
   beforeMount () {
     this.queryProduct()
+    this.queryRisk()
   }
 }
 </script>

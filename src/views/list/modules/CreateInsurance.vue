@@ -12,18 +12,21 @@
         <a-row type="flex" justify="left" align="top">
           <a-col :span="24">
             <a-form-item label="险种" v-bind="formItemLayout">
-              <a-select v-decorator="['riskName']" >
-                <a-select-option value="0">全部</a-select-option>
-                <a-select-option value="1">关闭</a-select-option>
-                <a-select-option value="2">运行中</a-select-option>
+              <a-select v-decorator="['riskSerialNum']" :options="options" @change="handleChange">
               </a-select>
             </a-form-item>
           </a-col>
         </a-row>
+        <a-form-item v-show="false" label="riskCode">
+          <a-input v-decorator="['riskCode', {initialValue: riskCode }]" />
+        </a-form-item>
+        <a-form-item v-show="false" label="riskName">
+          <a-input v-decorator="['riskName', {initialValue: riskName }]" />
+        </a-form-item>
         <a-row type="flex" justify="left" align="top">
           <a-col :span="12">
             <a-form-item label="主险标志">
-              <a-input v-decorator="['mainRiskType', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" />
+              <a-input v-decorator="['mainRiskType', {initialValue: riskFlag }]" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
@@ -38,15 +41,15 @@
         <a-row type="flex" justify="left" align="top">
           <a-col :span="12">
             <a-form-item label="保险期间">
-              <a-input v-decorator="['insurPeriod', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" />
+              <a-input v-decorator="['insurPeriod']" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="保险期间类型">
               <a-select v-decorator="['insurPeriodType']" >
-                <a-select-option value="0">全部</a-select-option>
-                <a-select-option value="1">关闭</a-select-option>
-                <a-select-option value="2">运行中</a-select-option>
+                <a-select-option value="0">年</a-select-option>
+                <a-select-option value="1">年龄</a-select-option>
+                <a-select-option value="2">终身</a-select-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -54,15 +57,14 @@
         <a-row type="flex" justify="left" align="top">
           <a-col :span="12">
             <a-form-item label="交费期间">
-              <a-input v-decorator="['paymentPeriod', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" />
+              <a-input v-decorator="['paymentPeriod']" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="交费期间类型">
               <a-select v-decorator="['paymentPeriodType']" >
-                <a-select-option value="0">全部</a-select-option>
-                <a-select-option value="1">关闭</a-select-option>
-                <a-select-option value="2">运行中</a-select-option>
+                <a-select-option value="0">年</a-select-option>
+                <a-select-option value="1">年龄</a-select-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -93,6 +95,7 @@ import pick from 'lodash.pick'
 
 // 表单字段
 const fields = [
+  'riskSerialNum',
   'riskCode',
   'riskName',
   'mainRiskType',
@@ -120,6 +123,30 @@ export default {
     model: {
       type: Object,
       default: () => null
+    },
+    handleChange: {
+      type: Function,
+      default: () => null
+    },
+    riskFlag: {
+      type: String,
+      default: 'Y'
+    },
+    riskName: {
+      type: String,
+      default: 'Y'
+    },
+    riskCode: {
+      type: String,
+      default: 'Y'
+    },
+    options: {
+      type: Array,
+       default: () => [{
+            'value': 'riskCode',
+            'label': 'riskName',
+            'key': 'index'
+          }]
     }
   },
   data () {
@@ -154,6 +181,7 @@ export default {
       }
     }
     return {
+      flag: 'Y',
       form: this.$form.createForm(this)
     }
   },
