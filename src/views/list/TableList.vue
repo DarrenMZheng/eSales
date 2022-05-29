@@ -98,7 +98,7 @@
 
         <span slot="action" slot-scope="text, record">
           <template>
-            <a @click="handleEdit(record)">配置</a>
+            <a @click="handleEdit(record)">修改</a>
           </template>
         </span>
       </s-table>
@@ -108,6 +108,7 @@
         :visible="visible"
         :loading="confirmLoading"
         :model="mdl"
+        :title="title"
         @cancel="handleCancel"
         @ok="handleOk"
       />
@@ -119,7 +120,7 @@
 <script>
 import moment from 'moment'
 import { STable, Ellipsis } from '@/components'
-import { getRoleList, getServiceList } from '@/api/manage'
+import { getRoleList, queryRiskList, addRisk, updateRisk } from '@/api/manage'
 
 import StepByStepModal from './modules/StepByStepModal'
 import CreateForm from './modules/CreateForm'
@@ -230,6 +231,7 @@ export default {
       visible: false,
       confirmLoading: false,
       mdl: null,
+      title: '新增险种',
       // 高级搜索 展开/关闭
       advanced: false,
       // 查询参数
@@ -238,7 +240,7 @@ export default {
       loadData: parameter => {
         const requestParameters = Object.assign({}, parameter, this.queryParam)
         console.log('loadData request parameters:', requestParameters)
-        return getServiceList(requestParameters)
+        return queryRiskList(requestParameters)
           .then(res => {
             console.log('res', res)
             return mockListData
@@ -270,10 +272,12 @@ export default {
   methods: {
     handleAdd () {
       this.mdl = null
+      this.title = '新增险种'
       this.visible = true
     },
     handleEdit (record) {
       this.visible = true
+      this.title = '修改险种'
       this.mdl = { ...record }
     },
     handleOk () {
@@ -284,34 +288,27 @@ export default {
           console.log('values', values)
           if (values.id > 0) {
             // 修改 e.g.
-            new Promise((resolve, reject) => {
-              setTimeout(() => {
-                resolve()
-              }, 1000)
-            }).then(res => {
+            updateRisk(values)
+            .then(res => {
+              console.log('res', res)
               this.visible = false
               this.confirmLoading = false
               // 重置表单数据
               form.resetFields()
               // 刷新表格
               this.$refs.table.refresh()
-
               this.$message.info('修改成功')
             })
           } else {
             // 新增
-            new Promise((resolve, reject) => {
-              setTimeout(() => {
-                resolve()
-              }, 1000)
-            }).then(res => {
+            addRisk(values)
+            .then(res => {
               this.visible = false
               this.confirmLoading = false
               // 重置表单数据
               form.resetFields()
               // 刷新表格
               this.$refs.table.refresh()
-
               this.$message.info('新增成功')
             })
           }

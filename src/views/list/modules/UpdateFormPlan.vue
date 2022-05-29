@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    :title="title"
+    title="修改产品"
     :width="640"
     :visible="visible"
     :confirmLoading="loading"
@@ -28,6 +28,7 @@
 
 <script>
 import pick from 'lodash.pick'
+
 // 表单字段
 const fields = ['productCode', 'productName', 'productSpeech', 'productDescribe']
 
@@ -35,10 +36,6 @@ export default {
   props: {
     visible: {
       type: Boolean,
-      required: true
-    },
-    title: {
-      type: String,
       required: true
     },
     loading: {

@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    :title="title"
+    title="修改险种"
     :width="640"
     :visible="visible"
     :confirmLoading="loading"
@@ -71,10 +71,6 @@ export default {
   props: {
     visible: {
       type: Boolean,
-      required: true
-    },
-    title: {
-      type: String,
       required: true
     },
     loading: {

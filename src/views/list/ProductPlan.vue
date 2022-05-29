@@ -117,6 +117,7 @@
 
       <create-form-plan
         ref="createModal"
+        :title="title"
         :visible="visible"
         :loading="confirmLoading"
         :model="mdl"
@@ -367,6 +368,7 @@ export default {
     return {
       // create model
       visible: false,
+      title: '新增产品',
       insuranceVisible: false,
       confirmLoading: false,
       mdl: null,
@@ -422,6 +424,7 @@ export default {
   methods: {
     handleAdd () {
       this.mdl = null
+      this.title = '新增产品'
       this.visible = true
     },
     handleAddInsurance () {
@@ -429,8 +432,9 @@ export default {
       this.insuranceVisible = true
     },
     handleEdit (record) {
-      this.visible = true
+      this.title = '修改产品'
       this.mdl = { ...record }
+      this.visible = true
     },
     handleEditInsurance (record) {
       this.insuranceVisible = true
