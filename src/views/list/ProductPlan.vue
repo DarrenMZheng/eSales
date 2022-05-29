@@ -24,7 +24,7 @@
             </a-col>
             <a-col :md="!advanced && 8 || 24" :sm="24">
               <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
-                <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
+                <a-button type="primary" @click="queryProduct">查询</a-button>
                 <a-button style="margin-left: 8px" @click="() => this.queryParam = {}">重置</a-button>
               </span>
             </a-col>
@@ -76,16 +76,6 @@
 
       <div class="table-operator">
         <a-button type="primary" icon="plus" @click="handleAddInsurance">新建</a-button>
-        <a-dropdown v-action:edit v-if="selectedRowKeys.length > 0">
-          <a-menu slot="overlay">
-            <a-menu-item key="1"><a-icon type="delete" />删除</a-menu-item>
-            <!-- lock | unlock -->
-            <a-menu-item key="2"><a-icon type="lock" />锁定</a-menu-item>
-          </a-menu>
-          <a-button style="margin-left: 8px">
-            批量操作 <a-icon type="down" />
-          </a-button>
-        </a-dropdown>
       </div>
       <s-table
         ref="productTable"
@@ -363,6 +353,7 @@ export default {
   data () {
     this.columns = columns
     this.productColumns = productColumns
+    this.responseDataList = []
     return {
       // create model
       visible: false,
@@ -379,11 +370,37 @@ export default {
       loadData: parameter => {
         const requestParameters = Object.assign({}, parameter, this.queryParam)
         console.log('loadData request parameters:', requestParameters)
-        return queryProductList(requestParameters)
-          .then(res => {
-            console.log('productList--', res)
-            return res
+        if (parameter) {
+          const requestParameters = Object.assign({}, parameter, this.queryParam)
+          console.log('loadData request parameters:', requestParameters)
+          const arrTemp = []
+          this.responseDataList.map((item, index) => {
+            if (parameter.pageNo === 1 && index < parameter.pageSize) {
+               arrTemp.push(item)
+            }
+            if (parameter.pageNo === Math.ceil(this.responseDataList.length / parameter.pageSize) && (parameter.pageNo - 1) * parameter.pageSize < index) {
+              arrTemp.push(item)
+            }
+            if (parameter.pageNo > 1 && parameter.pageNo < Math.ceil(this.responseDataList.length / parameter.pageSize) && (parameter.pageNo - 1) * parameter.pageSize <= index && index < parameter.pageNo * parameter.pageSize) {
+              arrTemp.push(item)
+            }
           })
+          const tempData = {
+            pageNo: parameter.pageNo,
+            pageSize: parameter.pageSize,
+            totalCount: this.responseDataList.length,
+            totalPage: Math.ceil(this.responseDataList.length / parameter.pageSize),
+            data: arrTemp
+          }
+          console.log('this.dataList------------', this.dataList)
+          return new Promise((resolve, reject) => {
+                resolve()
+            }).then(res => {
+              this.visible = false
+              this.confirmLoading = false
+              return tempData
+            })
+        }
       },
       // 查询参数
       queryProductParam: {},
@@ -439,11 +456,27 @@ export default {
       this.insuranceVisible = true
       this.mdlInsurance = { ...record }
     },
+    queryProduct () {
+      queryProductList(this.queryParam)
+      .then(res => {
+        console.log('res======', res)
+        res.pageNo = 0
+        res.pageSize = 10
+        res.totalCount = res.data.length
+        res.totalPage = Math.ceil(res.data.length / 10)
+        this.dataList = [...res.data]
+        console.log('this.dataList------------', this.dataList)
+        this.responseDataList = res.data
+        this.loadData({ pageNo: 0, pageSize: 10 }).then(() => {
+          this.$refs.table.refresh()
+        })
+      })
+    },
     getProductData (record) {
       const temp = {
         'code': 200, // 状态码，200：请求成功，其他：请求出错
         'msg': null, // 错误消息，成功返回 null, 否则返回出错信息
-        'data': record.riskList
+        'data': record ? record.riskList : []
       }
 
       this.loadProductData = { ...temp }
@@ -575,7 +608,11 @@ export default {
     onSelectChange (selectedRowKeys, selectedRows) {
       this.selectedRowKeys = selectedRowKeys
       this.selectedRows = selectedRows
-      this.getProductData(selectedRows)
+      if (selectedRows.length > 0) {
+        this.getProductData(selectedRows[0])
+      } else {
+        this.getProductData()
+      }
     },
     toggleAdvanced () {
       this.advanced = !this.advanced
@@ -585,6 +622,9 @@ export default {
         date: moment(new Date())
       }
     }
+  },
+  beforeMount () {
+    this.queryProduct()
   }
 }
 </script>

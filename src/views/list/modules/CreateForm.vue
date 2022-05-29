@@ -65,7 +65,7 @@
 import pick from 'lodash.pick'
 
 // 表单字段
-const fields = ['riskSerialNum', 'riskId', 'riskCode', 'riskName', 'mainRiskType', 'lifeInsurRiskMul', 'accidentRiskMul', 'sickInsurRiskMul', 'hospitalizaBenefit']
+const fields = ['riskSerialNum', 'riskId', 'riskCode', 'riskName', 'mainRiskType', 'clauseAdd', 'lifeInsurRiskMul', 'accidentRiskMul', 'sickInsurRiskMul', 'hospitalizaBenefit']
 
 export default {
   props: {

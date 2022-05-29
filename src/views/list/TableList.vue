@@ -50,7 +50,7 @@
             </template>
             <a-col :md="!advanced && 8 || 24" :sm="24">
               <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
-                <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
+                <a-button type="primary" @click="queryRisk">查询</a-button>
                 <a-button style="margin-left: 8px" @click="() => this.queryParam = {}">重置</a-button>
                 <a @click="toggleAdvanced" style="margin-left: 8px">
                   {{ advanced ? '收起' : '展开' }}
@@ -83,8 +83,11 @@
         :columns="columns"
         :data="loadData"
         :alert="true"
+        :flag="flag"
         :rowSelection="rowSelection"
+        :changePage="changePage"
         showPagination="auto"
+        :pagination="pagination"
       >
         <span slot="serial" slot-scope="text, record, index">
           {{ index + 1 }}
@@ -226,25 +229,56 @@ export default {
   },
   data () {
     this.columns = columns
+    this.responseDataList = {}
     return {
       // create model
       visible: false,
+      flag: true,
       confirmLoading: false,
       mdl: null,
       title: '新增险种',
       // 高级搜索 展开/关闭
       advanced: false,
+      dataList: [],
       // 查询参数
       queryParam: {},
       // 加载数据方法 必须为 Promise 对象
       loadData: parameter => {
-        const requestParameters = Object.assign({}, parameter, this.queryParam)
-        console.log('loadData request parameters:', requestParameters)
-        return queryRiskList(requestParameters)
-          .then(res => {
-            console.log('res', res)
-            return res
+        if (parameter) {
+          const requestParameters = Object.assign({}, parameter, this.queryParam)
+          console.log('loadData request parameters:', requestParameters)
+          const arrTemp = []
+          this.responseDataList.map((item, index) => {
+            if (parameter.pageNo === 1 && index < parameter.pageSize) {
+               arrTemp.push(item)
+            }
+            if (parameter.pageNo === Math.ceil(this.responseDataList.length / parameter.pageSize) && (parameter.pageNo - 1) * parameter.pageSize < index) {
+              arrTemp.push(item)
+            }
+            if (parameter.pageNo > 1 && parameter.pageNo < Math.ceil(this.responseDataList.length / parameter.pageSize) && (parameter.pageNo - 1) * parameter.pageSize <= index && index < parameter.pageNo * parameter.pageSize) {
+              arrTemp.push(item)
+            }
           })
+          const tempData = {
+            pageNo: parameter.pageNo,
+            pageSize: parameter.pageSize,
+            totalCount: this.responseDataList.length,
+            totalPage: Math.ceil(this.responseDataList.length / parameter.pageSize),
+            data: arrTemp
+          }
+          console.log('this.dataList------------', this.dataList)
+          return new Promise((resolve, reject) => {
+                resolve()
+            }).then(res => {
+              this.visible = false
+              this.confirmLoading = false
+              console.log('this.responseDataList============', tempData)
+              return tempData
+            })
+        }
+      },
+      changePage: parameter => {
+        this.$refs.table.refresh()
       },
       selectedRowKeys: [],
       selectedRows: []
@@ -279,6 +313,22 @@ export default {
       this.visible = true
       this.title = '修改险种'
       this.mdl = { ...record }
+    },
+    queryRisk () {
+      queryRiskList(this.queryParam)
+      .then(res => {
+        console.log('res======', res)
+        res.pageNo = 0
+        res.pageSize = 10
+        res.totalCount = res.data.length
+        res.totalPage = Math.ceil(res.data.length / 10)
+        this.dataList = [...res.data]
+        console.log('this.dataList------------', this.dataList)
+        this.responseDataList = res.data
+        this.loadData({ pageNo: 0, pageSize: 10 }).then(() => {
+          this.$refs.table.refresh()
+        })
+      })
     },
     handleOk () {
       const form = this.$refs.createModal.form
@@ -345,6 +395,9 @@ export default {
         date: moment(new Date())
       }
     }
+  },
+  beforeMount () {
+    this.queryRisk()
   }
 }
 </script>
