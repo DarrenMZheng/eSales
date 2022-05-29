@@ -11,7 +11,7 @@
             </a-col>
             <a-col :md="8" :sm="24">
               <a-form-item label="名称">
-                <a-input-number v-model="queryParam.riskName" style="width: 100%"/>
+                <a-input v-model="queryParam.riskName" style="width: 100%"/>
               </a-form-item>
             </a-col>
             <template v-if="advanced">
@@ -187,34 +187,34 @@ const statusMap = {
   }
 }
 
-const mockListData = {
-  'code': 200, // 状态码，200：请求成功，其他：请求出错
-  'msg': null, // 错误消息，成功返回 null, 否则返回出错信息
-  'data': [
-    {// 返回请求数据，JSON 数据格式
-      'riskSerialNum': '100011', // 流水号  主键
-      'riskId': 'ID10012', // 险种ID
-      'riskCode': 'MII', // 险种代码
-      'riskName': 'AA', // 险种名称
-      'mainRiskType': 'Y', // 主险标志
-      'lifeInsurRiskMul': '1', // 寿险风险等级
-      'accidentRiskMul': '1', // 意外险风险倍数
-      'sickInsurRiskMul': '2', // 重疾险风险倍数
-      'hospitalizaBenefit': '2' // 住院津贴
-    },
-    { // 返回请求数据，JSON 数据格式
-      'riskSerialNum': '100012', // 流水号  主键
-      'riskId': 'ID10013', // 险种ID
-      'riskCode': 'LTA', // 险种代码
-      'riskName': '尊享优选', // 险种名称
-      'mainRiskType': 'N', // 主险标志
-      'lifeInsurRiskMul': '1', // 寿险风险等级
-      'accidentRiskMul': '2', // 意外险风险倍数
-      'sickInsurRiskMul': '1', // 重疾险风险倍数
-      'hospitalizaBenefit': '2' // 住院津贴
-    }
-  ]
-}
+// const mockListData = {
+//   'code': 200, // 状态码，200：请求成功，其他：请求出错
+//   'msg': null, // 错误消息，成功返回 null, 否则返回出错信息
+//   'data': [
+//     {// 返回请求数据，JSON 数据格式
+//       'riskSerialNum': '100011', // 流水号  主键
+//       'riskId': 'ID10012', // 险种ID
+//       'riskCode': 'MII', // 险种代码
+//       'riskName': 'AA', // 险种名称
+//       'mainRiskType': 'Y', // 主险标志
+//       'lifeInsurRiskMul': '1', // 寿险风险等级
+//       'accidentRiskMul': '1', // 意外险风险倍数
+//       'sickInsurRiskMul': '2', // 重疾险风险倍数
+//       'hospitalizaBenefit': '2' // 住院津贴
+//     },
+//     { // 返回请求数据，JSON 数据格式
+//       'riskSerialNum': '100012', // 流水号  主键
+//       'riskId': 'ID10013', // 险种ID
+//       'riskCode': 'LTA', // 险种代码
+//       'riskName': '尊享优选', // 险种名称
+//       'mainRiskType': 'N', // 主险标志
+//       'lifeInsurRiskMul': '1', // 寿险风险等级
+//       'accidentRiskMul': '2', // 意外险风险倍数
+//       'sickInsurRiskMul': '1', // 重疾险风险倍数
+//       'hospitalizaBenefit': '2' // 住院津贴
+//     }
+//   ]
+// }
 
 export default {
   name: 'TableList',
@@ -243,7 +243,7 @@ export default {
         return queryRiskList(requestParameters)
           .then(res => {
             console.log('res', res)
-            return mockListData
+            return res
           })
       },
       selectedRowKeys: [],
@@ -285,8 +285,8 @@ export default {
       this.confirmLoading = true
       form.validateFields((errors, values) => {
         if (!errors) {
-          console.log('values', values)
-          if (values.id > 0) {
+          console.log('values riskSerialNum', values.riskSerialNum)
+          if (values.riskSerialNum) {
             // 修改 e.g.
             updateRisk(values)
             .then(res => {
@@ -310,6 +310,9 @@ export default {
               // 刷新表格
               this.$refs.table.refresh()
               this.$message.info('新增成功')
+            }).error(res => {
+              console.log('res', res)
+              this.confirmLoading = false
             })
           }
         } else {

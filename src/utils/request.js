@@ -12,11 +12,11 @@ const request = axios.create({
   timeout: 6000 // 请求超时时间
 })
 
-const request1 = axios.create({
-  // API 请求的默认前缀
-  baseURL: process.env.VUE_APP_API2_BASE_URL,
-  timeout: 6000 // 请求超时时间
-})
+// const request1 = axios.create({
+//   // API 请求的默认前缀
+//   baseURL: process.env.VUE_APP_API2_BASE_URL,
+//   timeout: 6000 // 请求超时时间
+// })
 
 // 异常拦截处理器
 const errorHandler = (error) => {
@@ -59,15 +59,15 @@ request.interceptors.request.use(config => {
 }, errorHandler)
 
 // request1 interceptor
-request1.interceptors.request.use(config => {
-  const token = storage.get(ACCESS_TOKEN)
-  // 如果 token 存在
-  // 让每个请求携带自定义 token 请根据实际情况自行修改
-  if (token) {
-    config.headers[ACCESS_TOKEN] = token
-  }
-  return config
-}, errorHandler)
+// request1.interceptors.request.use(config => {
+//   const token = storage.get(ACCESS_TOKEN)
+//   // 如果 token 存在
+//   // 让每个请求携带自定义 token 请根据实际情况自行修改
+//   if (token) {
+//     config.headers[ACCESS_TOKEN] = token
+//   }
+//   return config
+// }, errorHandler)
 
 // response interceptor
 request.interceptors.response.use((response) => {
@@ -75,9 +75,9 @@ request.interceptors.response.use((response) => {
 }, errorHandler)
 
 // response1 interceptor
-request1.interceptors.response.use((response) => {
-  return response.data
-}, errorHandler)
+// request1.interceptors.response.use((response) => {
+//   return response.data
+// }, errorHandler)
 
 const installer = {
   vm: {},
@@ -90,6 +90,6 @@ export default request
 
 export {
   installer as VueAxios,
-  request as axios,
-  request1
+  request as axios
+  // request1
 }

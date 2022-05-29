@@ -8,51 +8,51 @@
     @cancel="() => { $emit('cancel') }"
   >
     <a-spin :spinning="loading">
-      <a-form :form="form" v-bind="formLayout">
+      <a-form :form="form" v-bind="formLayout" labelAlign="left">
         <!-- 检查是否有 id 并且大于0，大于0是修改。其他是新增，新增不显示主键ID -->
-        <a-form-item label="主键ID">
-          <a-input v-decorator="['riskSerialNum', { initialValue: 0 }]" />
+        <a-form-item label="主键ID" v-show="model && model.riskSerialNum > 0" v-bind="formItemLayout">
+          <a-input v-decorator="['riskSerialNum']" />
         </a-form-item>
-        <a-form-item label="险种ID">
+        <a-form-item label="险种ID" v-bind="formItemLayout">
           <a-input v-decorator="['riskId', {rules: [{required: true, message: '请输入至少五个字符的规则描述！'}]}]" />
         </a-form-item>
-        <a-form-item label="代码">
+        <a-form-item label="代码" v-bind="formItemLayout">
           <a-input v-decorator="['riskCode', {rules: [{required: true, message: '请输入至少五个字符的规则描述！'}]}]" />
         </a-form-item>
-        <a-form-item label="名称">
+        <a-form-item label="名称" v-bind="formItemLayout">
           <a-input v-decorator="['riskName', {rules: [{required: true, message: '请输入至少五个字符的规则描述！'}]}]" />
         </a-form-item>
-        <a-form-item label="主险标志">
-          <a-radio-group v-decorator="['mainRiskType', {initialValue: 0 }]" >
-            <a-radio :value="0">Y</a-radio>
-            <a-radio :value="1">N</a-radio>
+        <a-form-item label="主险标志" v-bind="formItemLayout">
+          <a-radio-group v-decorator="['mainRiskType']" >
+            <a-radio value="Y">Y</a-radio>
+            <a-radio value="N">N</a-radio>
           </a-radio-group>
         </a-form-item>
-        <a-form-item label="条款地址">
+        <a-form-item label="条款地址" v-bind="formItemLayout">
           <a-input v-decorator="['clauseAdd', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" />
         </a-form-item>
         <a-divider style="height: 2px; background-color: #f0f0f0" />
         <a-row type="flex" justify="center" align="top">
           <a-col :span="12">
             <a-form-item label="寿险风险">
-              <a-input-number v-decorator="['lifeInsurRiskMul', {rules: [{required: true, message: '请输入至少五个字符的规则描述！'}]}]" />倍
+              <a-input-number v-decorator="['lifeInsurRiskMul', {rules: [{required: true, message: '请输入至少五个字符的规则描述！'}]}]" /> 倍
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="意外险风险">
-              <a-input-number v-decorator="['accidentRiskMul', {rules: [{required: true, message: '请输入至少五个字符的规则描述！'}]}]" />倍
+              <a-input-number v-decorator="['accidentRiskMul', {rules: [{required: true, message: '请输入至少五个字符的规则描述！'}]}]" /> 倍
             </a-form-item>
           </a-col>
         </a-row>
         <a-row type="flex" justify="center" align="top">
           <a-col :span="12">
             <a-form-item label="重疾险风险">
-              <a-input-number v-decorator="['sickInsurRiskMul', {rules: [{required: true, message: '请输入至少五个字符的规则描述！'}]}]" />倍
+              <a-input-number v-decorator="['sickInsurRiskMul', {rules: [{required: true, message: '请输入至少五个字符的规则描述！'}]}]" /> 倍
             </a-form-item>
           </a-col>
           <a-col :span="12">
             <a-form-item label="住院津贴">
-              <a-input-number v-decorator="['hospitalizaBenefit', {rules: [{required: true, message: '请输入至少五个字符的规则描述！'}]}]" />倍
+              <a-input-number v-decorator="['hospitalizaBenefit', {rules: [{required: true, message: '请输入至少五个字符的规则描述！'}]}]" /> 倍
             </a-form-item>
           </a-col>
         </a-row>
@@ -90,11 +90,21 @@ export default {
     this.formLayout = {
       labelCol: {
         xs: { span: 24 },
-        sm: { span: 7 }
+        sm: { span: 8 }
       },
       wrapperCol: {
         xs: { span: 24 },
-        sm: { span: 13 }
+        sm: { span: 16 }
+      }
+    }
+    this.formItemLayout = {
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 4 }
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 18 }
       }
     }
     return {

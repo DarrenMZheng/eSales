@@ -11,15 +11,14 @@
             </a-col>
             <a-col :md="8" :sm="24">
               <a-form-item label="名称">
-                <a-input-number v-model="queryParam.productName" style="width: 100%"/>
+                <a-input v-model="queryParam.productName" placeholder=""/>
               </a-form-item>
             </a-col>
             <a-col :md="8" :sm="24">
               <a-form-item label="销售状态">
-                <a-select v-model="queryParam.saleStateId" placeholder="请选择" default-value="0">
-                  <a-select-option value="0">全部</a-select-option>
-                  <a-select-option value="1">关闭</a-select-option>
-                  <a-select-option value="2">运行中</a-select-option>
+                <a-select v-model="queryParam.saleStateId" placeholder="请选择" default-value="Y">
+                  <a-select-option value="Y">在售</a-select-option>
+                  <a-select-option value="N">停售</a-select-option>
                 </a-select>
               </a-form-item>
             </a-col>
@@ -140,7 +139,7 @@
 <script>
 import moment from 'moment'
 import { STable, Ellipsis } from '@/components'
-import { getRoleList, getServiceList } from '@/api/manage'
+import { getRoleList, queryProductList, addProduct, updateProduct } from '@/api/manage'
 
 import StepByStepModal from './modules/StepByStepModal'
 import CreateFormPlan from './modules/CreateFormPlan'
@@ -157,8 +156,7 @@ const columns = [
   },
   {
     title: '名称',
-    dataIndex: 'productName',
-    sorter: true
+    dataIndex: 'productName'
   },
   {
     title: '销售状态',
@@ -219,13 +217,13 @@ const productColumns = [
     title: '固定保费',
     dataIndex: 'fixPremium',
     sorter: true
-  },
-  {
-    title: '操作',
-    dataIndex: 'action',
-    width: '150px',
-    scopedSlots: { customRender: 'action' }
   }
+  // {
+  //   title: '操作',
+  //   dataIndex: 'action',
+  //   width: '150px',
+  //   scopedSlots: { customRender: 'action' }
+  // }
 ]
 
 const statusMap = {
@@ -247,111 +245,111 @@ const statusMap = {
   }
 }
 
-const mockListData = {
-  'code': 200, // 状态码，200：请求成功，其他：请求出错
-  'msg': null, // 错误消息，成功返回 null, 否则返回出错信息
-  'data': [
-    {// 返回请求数据，JSON 数据格式
-      'productSerialNum': '110011', // 产品主键  主键
-      'productCode': 'MII', // 产品代码
-      'productName': 'AA', // 产品名称
-      'saleStateName': 'CCDD', // 销售状态名称
-      'creater': '张三', // 创建
-      'riskList': [
-        {
-          'riskSerialNum': '100012', // 险种主键
-          'riskCode': 'LTA', // 险种代码
-          'riskName': '尊享优选', // 险种名称
-          'mainRiskType': 'N', // 主险标志
-          'insurPeriod': '1', // 保险期间
-          'paymentPeriod': '2', // 交费期间
-          'insurAmountType': '1', // 保额类型
-          'fixInsurAmount': '3000000000', // 固定保费
-          'proInsurAmount': '2', // 保额比例
-          'fixPremium': '5000000000' // 固定保额
-        },
-        {
-          'riskSerialNum': '100013', // 险种主键
-          'riskCode': 'MTL', // 险种代码
-          'riskName': '尊享惠选', // 险种名称
-          'mainRiskType': 'N', // 主险标志
-          'insurPeriod': '1', // 保险期间
-          'paymentPeriod': '2', // 交费期间
-          'insurAmountType': '1', // 保额类型
-          'fixInsurAmount': '2000000', // 固定保费
-          'proInsurAmount': '2', // 保额比例
-          'fixPremium': '2000000000' // 固定保额
-        }
-      ]
-    },
-    {// 返回请求数据，JSON 数据格式
-      'productSerialNum': '110012', // 产品主键  主键
-      'productCode': 'MIIqq', // 产品代码
-      'productName': 'AAdsfgh', // 产品名称
-      'saleStateName': 'CCDD', // 销售状态名称
-      'creater': '李四', // 创建
-      'riskList': [
-        {
-          'riskSerialNum': '100016', // 险种主键
-          'riskCode': 'LTAQQ', // 险种代码
-          'riskName': '史蒂夫规划', // 险种名称
-          'mainRiskType': 'N', // 主险标志
-          'insurPeriod': '1', // 保险期间
-          'paymentPeriod': '2', // 交费期间
-          'insurAmountType': '1', // 保额类型
-          'fixInsurAmount': '3000000000', // 固定保费
-          'proInsurAmount': '2', // 保额比例
-          'fixPremium': '5000000000' // 固定保额
-        },
-        {
-          'riskSerialNum': '100017', // 险种主键
-          'riskCode': 'MTL', // 险种代码
-          'riskName': '尊享惠选', // 险种名称
-          'mainRiskType': 'N', // 主险标志
-          'insurPeriod': '1', // 保险期间
-          'paymentPeriod': '2', // 交费期间
-          'insurAmountType': '1', // 保额类型
-          'fixInsurAmount': '2000000', // 固定保费
-          'proInsurAmount': '2', // 保额比例
-          'fixPremium': '2000000000' // 固定保额
-        }
-      ]
-    },
-    {// 返回请求数据，JSON 数据格式
-      'productSerialNum': '110013', // 产品主键  主键
-      'productCode': 'DFCMII', // 产品代码
-      'productName': 'A士大夫A', // 产品名称
-      'saleStateName': 'CCDD', // 销售状态名称
-      'creater': '刘武', // 创建
-      'riskList': [
-        {
-          'riskSerialNum': '100018', // 险种主键
-          'riskCode': 'LTA', // 险种代码
-          'riskName': '尊享优选时代', // 险种名称
-          'mainRiskType': 'N', // 主险标志
-          'insurPeriod': '1', // 保险期间
-          'paymentPeriod': '2', // 交费期间
-          'insurAmountType': '1', // 保额类型
-          'fixInsurAmount': '3000000000', // 固定保费
-          'proInsurAmount': '2', // 保额比例
-          'fixPremium': '5000000000' // 固定保额
-        },
-        {
-          'riskSerialNum': '100019', // 险种主键
-          'riskCode': 'MTL', // 险种代码
-          'riskName': '尊享惠选地方放', // 险种名称
-          'mainRiskType': 'N', // 主险标志
-          'insurPeriod': '1', // 保险期间
-          'paymentPeriod': '2', // 交费期间
-          'insurAmountType': '1', // 保额类型
-          'fixInsurAmount': '2000000', // 固定保费
-          'proInsurAmount': '2', // 保额比例
-          'fixPremium': '2000000000' // 固定保额
-        }
-      ]
-    }
-  ]
-}
+// const mockListData = {
+//   'code': 200, // 状态码，200：请求成功，其他：请求出错
+//   'msg': null, // 错误消息，成功返回 null, 否则返回出错信息
+//   'data': [
+//     {// 返回请求数据，JSON 数据格式
+//       'productSerialNum': '110011', // 产品主键  主键
+//       'productCode': 'MII', // 产品代码
+//       'productName': 'AA', // 产品名称
+//       'saleStateName': 'CCDD', // 销售状态名称
+//       'creater': '张三', // 创建
+//       'riskList': [
+//         {
+//           'riskSerialNum': '100012', // 险种主键
+//           'riskCode': 'LTA', // 险种代码
+//           'riskName': '尊享优选', // 险种名称
+//           'mainRiskType': 'N', // 主险标志
+//           'insurPeriod': '1', // 保险期间
+//           'paymentPeriod': '2', // 交费期间
+//           'insurAmountType': '1', // 保额类型
+//           'fixInsurAmount': '3000000000', // 固定保费
+//           'proInsurAmount': '2', // 保额比例
+//           'fixPremium': '5000000000' // 固定保额
+//         },
+//         {
+//           'riskSerialNum': '100013', // 险种主键
+//           'riskCode': 'MTL', // 险种代码
+//           'riskName': '尊享惠选', // 险种名称
+//           'mainRiskType': 'N', // 主险标志
+//           'insurPeriod': '1', // 保险期间
+//           'paymentPeriod': '2', // 交费期间
+//           'insurAmountType': '1', // 保额类型
+//           'fixInsurAmount': '2000000', // 固定保费
+//           'proInsurAmount': '2', // 保额比例
+//           'fixPremium': '2000000000' // 固定保额
+//         }
+//       ]
+//     },
+//     {// 返回请求数据，JSON 数据格式
+//       'productSerialNum': '110012', // 产品主键  主键
+//       'productCode': 'MIIqq', // 产品代码
+//       'productName': 'AAdsfgh', // 产品名称
+//       'saleStateName': 'CCDD', // 销售状态名称
+//       'creater': '李四', // 创建
+//       'riskList': [
+//         {
+//           'riskSerialNum': '100016', // 险种主键
+//           'riskCode': 'LTAQQ', // 险种代码
+//           'riskName': '史蒂夫规划', // 险种名称
+//           'mainRiskType': 'N', // 主险标志
+//           'insurPeriod': '1', // 保险期间
+//           'paymentPeriod': '2', // 交费期间
+//           'insurAmountType': '1', // 保额类型
+//           'fixInsurAmount': '3000000000', // 固定保费
+//           'proInsurAmount': '2', // 保额比例
+//           'fixPremium': '5000000000' // 固定保额
+//         },
+//         {
+//           'riskSerialNum': '100017', // 险种主键
+//           'riskCode': 'MTL', // 险种代码
+//           'riskName': '尊享惠选', // 险种名称
+//           'mainRiskType': 'N', // 主险标志
+//           'insurPeriod': '1', // 保险期间
+//           'paymentPeriod': '2', // 交费期间
+//           'insurAmountType': '1', // 保额类型
+//           'fixInsurAmount': '2000000', // 固定保费
+//           'proInsurAmount': '2', // 保额比例
+//           'fixPremium': '2000000000' // 固定保额
+//         }
+//       ]
+//     },
+//     {// 返回请求数据，JSON 数据格式
+//       'productSerialNum': '110013', // 产品主键  主键
+//       'productCode': 'DFCMII', // 产品代码
+//       'productName': 'A士大夫A', // 产品名称
+//       'saleStateName': 'CCDD', // 销售状态名称
+//       'creater': '刘武', // 创建
+//       'riskList': [
+//         {
+//           'riskSerialNum': '100018', // 险种主键
+//           'riskCode': 'LTA', // 险种代码
+//           'riskName': '尊享优选时代', // 险种名称
+//           'mainRiskType': 'N', // 主险标志
+//           'insurPeriod': '1', // 保险期间
+//           'paymentPeriod': '2', // 交费期间
+//           'insurAmountType': '1', // 保额类型
+//           'fixInsurAmount': '3000000000', // 固定保费
+//           'proInsurAmount': '2', // 保额比例
+//           'fixPremium': '5000000000' // 固定保额
+//         },
+//         {
+//           'riskSerialNum': '100019', // 险种主键
+//           'riskCode': 'MTL', // 险种代码
+//           'riskName': '尊享惠选地方放', // 险种名称
+//           'mainRiskType': 'N', // 主险标志
+//           'insurPeriod': '1', // 保险期间
+//           'paymentPeriod': '2', // 交费期间
+//           'insurAmountType': '1', // 保额类型
+//           'fixInsurAmount': '2000000', // 固定保费
+//           'proInsurAmount': '2', // 保额比例
+//           'fixPremium': '2000000000' // 固定保额
+//         }
+//       ]
+//     }
+//   ]
+// }
 
 export default {
   name: 'ProductPlan',
@@ -381,10 +379,10 @@ export default {
       loadData: parameter => {
         const requestParameters = Object.assign({}, parameter, this.queryParam)
         console.log('loadData request parameters:', requestParameters)
-        return getServiceList(requestParameters)
+        return queryProductList(requestParameters)
           .then(res => {
             console.log('productList--', res)
-            return mockListData
+            return res
           })
       },
       // 查询参数
@@ -392,11 +390,12 @@ export default {
       loadProductData: parameter => {
         const requestParameters = Object.assign({}, parameter, this.queryProductParam)
         console.log('loadData request parameters:', requestParameters)
-        return getServiceList(requestParameters)
-          .then(res => {
-            console.log('productList--', res)
-            return mockListData
-          })
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              resolve()
+            }, 1000)
+          }).then(res => {
+        })
       },
       selectedRowKeys: [],
       selectedRows: []
@@ -441,26 +440,19 @@ export default {
       this.mdlInsurance = { ...record }
     },
     getProductData (record) {
-      console.log('record----', record)
       const temp = {
         'code': 200, // 状态码，200：请求成功，其他：请求出错
         'msg': null, // 错误消息，成功返回 null, 否则返回出错信息
         'data': record.riskList
-        // 'pageNo': 1,
-        // 'pageSize': 10,
-        // 'totalPage': 100,
-        // 'key': 1,
-        // 'next': 1
       }
 
       this.loadProductData = { ...temp }
-      console.log('this.loadProductData-----', this.loadProductData)
-      console.log('this.$refs.productTable-----', this.$refs.productTable)
       this.$refs.productTable.data = parameter => {
-        const requestParameters = Object.assign({}, parameter, this.queryParam)
-        return getServiceList(requestParameters)
-          .then(res => {
-            console.log('productList--', temp)
+        return new Promise((resolve, reject) => {
+              resolve()
+          }).then(res => {
+            this.visible = false
+            this.confirmLoading = false
             return temp
           })
       }
@@ -485,13 +477,10 @@ export default {
       form.validateFields((errors, values) => {
         if (!errors) {
           console.log('values', values)
-          if (values.id > 0) {
+          if (values.serialNum) {
             // 修改 e.g.
-            new Promise((resolve, reject) => {
-              setTimeout(() => {
-                resolve()
-              }, 1000)
-            }).then(res => {
+            updateProduct(values)
+            .then(res => {
               this.visible = false
               this.confirmLoading = false
               // 重置表单数据
@@ -503,11 +492,10 @@ export default {
             })
           } else {
             // 新增
-            new Promise((resolve, reject) => {
-              setTimeout(() => {
-                resolve()
-              }, 1000)
-            }).then(res => {
+            values.saleStateId = 'Y'
+            values.creater = 'admin'
+            addProduct(values)
+            .then(res => {
               this.visible = false
               this.confirmLoading = false
               // 重置表单数据

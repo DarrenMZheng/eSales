@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+// import { request, request1 } from '@/utils/request'
 
 const api = {
   user: '/user',
@@ -32,7 +33,7 @@ export function addRisk (parameter) {
   return request({
     url: api.addRisk,
     method: 'post',
-    params: parameter
+    data: parameter
   })
 }
 
@@ -40,8 +41,8 @@ export function addRisk (parameter) {
 export function updateRisk (parameter) {
   return request({
     url: api.updateRisk,
-    method: 'put',
-    params: parameter
+    method: 'post',
+    data: parameter
   })
 }
 
@@ -59,7 +60,7 @@ export function addProduct (parameter) {
   return request({
     url: api.addProduct,
     method: 'post',
-    params: parameter
+    data: parameter
   })
 }
 
@@ -67,8 +68,8 @@ export function addProduct (parameter) {
 export function updateProduct (parameter) {
   return request({
     url: api.updateProduct,
-    method: 'put',
-    params: parameter
+    method: 'post',
+    data: parameter
   })
 }
 
@@ -77,7 +78,7 @@ export function addProductRisk (parameter) {
   return request({
     url: api.addProductRisk,
     method: 'post',
-    params: parameter
+    data: parameter
   })
 }
 

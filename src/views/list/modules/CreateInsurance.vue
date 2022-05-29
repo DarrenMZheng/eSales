@@ -8,15 +8,19 @@
     @cancel="() => { $emit('cancel') }"
   >
     <a-spin :spinning="loading">
-      <a-form :form="form" v-bind="formLayout">
-        <a-form-item label="险种">
-          <a-select v-decorator="['riskName']" >
-            <a-select-option value="0">全部</a-select-option>
-            <a-select-option value="1">关闭</a-select-option>
-            <a-select-option value="2">运行中</a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-row type="flex" justify="center" align="top">
+      <a-form :form="form" v-bind="formLayout" labelAlign="left">
+        <a-row type="flex" justify="left" align="top">
+          <a-col :span="24">
+            <a-form-item label="险种" v-bind="formItemLayout">
+              <a-select v-decorator="['riskName']" >
+                <a-select-option value="0">全部</a-select-option>
+                <a-select-option value="1">关闭</a-select-option>
+                <a-select-option value="2">运行中</a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row type="flex" justify="left" align="top">
           <a-col :span="12">
             <a-form-item label="主险标志">
               <a-input v-decorator="['mainRiskType', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" />
@@ -31,7 +35,7 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-row type="flex" justify="center" align="top">
+        <a-row type="flex" justify="left" align="top">
           <a-col :span="12">
             <a-form-item label="保险期间">
               <a-input v-decorator="['insurPeriod', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" />
@@ -47,7 +51,7 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-row type="flex" justify="center" align="top">
+        <a-row type="flex" justify="left" align="top">
           <a-col :span="12">
             <a-form-item label="交费期间">
               <a-input v-decorator="['paymentPeriod', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" />
@@ -63,20 +67,20 @@
             </a-form-item>
           </a-col>
         </a-row>
-        <a-form-item label="保额计算类型">
+        <a-form-item label="保额计算类型" v-bind="formItemLayout" >
           <a-radio-group v-decorator="['insurAmountType', {initialValue: 0 }]" >
             <a-radio :value="0">固定保额</a-radio>
             <a-radio :value="1">与主险保额固定比例</a-radio>
             <a-radio :value="2">不固定保额</a-radio>
           </a-radio-group>
         </a-form-item>
-        <a-form-item label="固定保额">
+        <a-form-item label="固定保额" v-bind="formItemMinLayout">
           <a-input v-decorator="['fixInsurAmount', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" addonAfter="元" />
         </a-form-item>
-        <a-form-item label="固定保费">
+        <a-form-item label="固定保费" v-bind="formItemMinLayout">
           <a-input v-decorator="['fixPremium', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" addonAfter="元" />
         </a-form-item>
-        <a-form-item label="描述">
+        <a-form-item label="描述" v-bind="formItemLayout">
           <a-textarea :rows="3" v-decorator="['describe', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" />
         </a-form-item>
       </a-form>
@@ -122,11 +126,31 @@ export default {
     this.formLayout = {
       labelCol: {
         xs: { span: 24 },
-        sm: { span: 7 }
+        sm: { span: 8 }
       },
       wrapperCol: {
         xs: { span: 24 },
-        sm: { span: 13 }
+        sm: { span: 12 }
+      }
+    }
+    this.formItemLayout = {
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 4 }
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 18 }
+      }
+    }
+    this.formItemMinLayout = {
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 4 }
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 6 }
       }
     }
     return {

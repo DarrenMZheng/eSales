@@ -8,7 +8,10 @@
     @cancel="() => { $emit('cancel') }"
   >
     <a-spin :spinning="loading">
-      <a-form :form="form" v-bind="formLayout">
+      <a-form :form="form" v-bind="formLayout" labelAlign="left">
+        <a-form-item label="主键ID" v-show="false" v-bind="formItemLayout">
+          <a-input v-decorator="['serialNum']" />
+        </a-form-item>
         <a-form-item label="代码">
           <a-input v-decorator="['productCode', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" />
         </a-form-item>
@@ -29,7 +32,7 @@
 <script>
 import pick from 'lodash.pick'
 // 表单字段
-const fields = ['productCode', 'productName', 'productSpeech', 'productDescribe']
+const fields = ['serialNum', 'productCode', 'productName', 'productSpeech', 'productDescribe']
 
 export default {
   props: {
@@ -54,11 +57,11 @@ export default {
     this.formLayout = {
       labelCol: {
         xs: { span: 24 },
-        sm: { span: 7 }
+        sm: { span: 4 }
       },
       wrapperCol: {
         xs: { span: 24 },
-        sm: { span: 13 }
+        sm: { span: 18 }
       }
     }
     return {
