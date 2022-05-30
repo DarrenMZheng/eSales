@@ -52,10 +52,6 @@
               <span class="table-page-search-submitButtons" :style="advanced && { float: 'right', overflow: 'hidden' } || {} ">
                 <a-button type="primary" @click="queryRisk">查询</a-button>
                 <a-button style="margin-left: 8px" @click="() => this.queryParam = {}">重置</a-button>
-                <a @click="toggleAdvanced" style="margin-left: 8px">
-                  {{ advanced ? '收起' : '展开' }}
-                  <a-icon :type="advanced ? 'up' : 'down'"/>
-                </a>
               </span>
             </a-col>
           </a-row>
@@ -64,16 +60,6 @@
 
       <div class="table-operator">
         <a-button type="primary" icon="plus" @click="handleAdd">新建</a-button>
-        <a-dropdown v-action:edit v-if="selectedRowKeys.length > 0">
-          <a-menu slot="overlay">
-            <a-menu-item key="1"><a-icon type="delete" />删除</a-menu-item>
-            <!-- lock | unlock -->
-            <a-menu-item key="2"><a-icon type="lock" />锁定</a-menu-item>
-          </a-menu>
-          <a-button style="margin-left: 8px">
-            批量操作 <a-icon type="down" />
-          </a-button>
-        </a-dropdown>
       </div>
 
       <s-table
@@ -86,7 +72,7 @@
         :flag="flag"
         :rowSelection="rowSelection"
         :changePage="changePage"
-        showPagination="auto"
+        showPagination="true"
         :pagination="pagination"
       >
         <span slot="serial" slot-scope="text, record, index">
@@ -128,11 +114,13 @@ import { getRoleList, queryRiskList, addRisk, updateRisk } from '@/api/manage'
 import StepByStepModal from './modules/StepByStepModal'
 import CreateForm from './modules/CreateForm'
 
+let responseDataList = []
+
 const columns = [
   {
     title: '险种ID',
     dataIndex: 'riskId',
-    scopedSlots: { customRender: 'serial' }
+    width: '90px'
   },
   {
     title: '代码',
@@ -144,29 +132,33 @@ const columns = [
   },
   {
     title: '主险标志',
-    dataIndex: 'mainRiskType'
+    dataIndex: 'mainRiskType',
+    width: '90px'
   },
   {
     title: '寿险风险倍数',
-    dataIndex: 'lifeInsurRiskMul'
+    dataIndex: 'lifeInsurRiskMul',
+    minWidth: '90px'
   },
   {
     title: '意外险风险倍数',
     dataIndex: 'accidentRiskMul',
-    sorter: true
+    minWidth: '90px'
   },
   {
     title: '重疾风险倍数',
-    dataIndex: 'sickInsurRiskMul'
+    dataIndex: 'sickInsurRiskMul',
+    minWidth: '90px'
   },
   {
     title: '住院津贴',
-    dataIndex: 'hospitalizaBenefit'
+    dataIndex: 'hospitalizaBenefit',
+    minWidth: '90px'
   },
   {
     title: '操作',
     dataIndex: 'action',
-    width: '150px',
+    width: '100px',
     scopedSlots: { customRender: 'action' }
   }
 ]
@@ -229,7 +221,6 @@ export default {
   },
   data () {
     this.columns = columns
-    this.responseDataList = {}
     return {
       // create model
       visible: false,
@@ -248,31 +239,44 @@ export default {
           const requestParameters = Object.assign({}, parameter, this.queryParam)
           console.log('loadData request parameters:', requestParameters)
           const arrTemp = []
-          this.responseDataList.map((item, index) => {
-            if (parameter.pageNo === 1 && index < parameter.pageSize) {
-               arrTemp.push(item)
-            }
-            if (parameter.pageNo === Math.ceil(this.responseDataList.length / parameter.pageSize) && (parameter.pageNo - 1) * parameter.pageSize < index) {
+          const pageNum = Math.ceil(responseDataList.length / parameter.pageSize)
+          responseDataList.map((item, index) => {
+            if (parameter.pageNo < pageNum) {
+              if (parameter.pageNo === 1 && index < parameter.pageSize) {
+                arrTemp.push(item)
+              }
+              if (parameter.pageNo > 1 && index >= (parameter.pageNo - 1) * parameter.pageSize && index < parameter.pageNo * parameter.pageSize) {
+                arrTemp.push(item)
+              }
+            } else if (pageNum === 1) {
+              arrTemp.push(item)
+            } else if (pageNum > 1 && parameter.pageNo === pageNum && index >= (parameter.pageNo - 1) * parameter.pageSize && index < responseDataList.length) {
               arrTemp.push(item)
             }
-            if (parameter.pageNo > 1 && parameter.pageNo < Math.ceil(this.responseDataList.length / parameter.pageSize) && (parameter.pageNo - 1) * parameter.pageSize <= index && index < parameter.pageNo * parameter.pageSize) {
-              arrTemp.push(item)
-            }
+
+            // if (parameter.pageNo < Math.ceil(responseDataList.length / parameter.pageSize) &&  parameter.pageNo === 1 && index < parameter.pageSize) {
+            //    arrTemp.push(item)
+            // }
+            // if (1 < parameter.pageNo &&  parameter.pageNo === Math.ceil(responseDataList.length / parameter.pageSize) && (parameter.pageNo - 1) * parameter.pageSize < index) {
+            //   arrTemp.push(item)
+            // }
+            // if (parameter.pageNo > 1 && parameter.pageNo < Math.ceil(responseDataList.length / parameter.pageSize) && (parameter.pageNo - 1) * parameter.pageSize <= index && index < parameter.pageNo * parameter.pageSize) {
+            //   arrTemp.push(item)
+            // }
           })
           const tempData = {
             pageNo: parameter.pageNo,
             pageSize: parameter.pageSize,
-            totalCount: this.responseDataList.length,
-            totalPage: Math.ceil(this.responseDataList.length / parameter.pageSize),
+            totalCount: responseDataList.length,
+            totalPage: Math.ceil(responseDataList.length / parameter.pageSize),
             data: arrTemp
           }
-          console.log('this.dataList------------', this.dataList)
           return new Promise((resolve, reject) => {
                 resolve()
             }).then(res => {
               this.visible = false
               this.confirmLoading = false
-              console.log('this.responseDataList============', tempData)
+              console.log('responseDataList============', tempData)
               return tempData
             })
         }
@@ -317,14 +321,12 @@ export default {
     queryRisk () {
       queryRiskList(this.queryParam)
       .then(res => {
-        console.log('res======', res)
         res.pageNo = 0
         res.pageSize = 10
         res.totalCount = res.data.length
         res.totalPage = Math.ceil(res.data.length / 10)
         this.dataList = [...res.data]
-        console.log('this.dataList------------', this.dataList)
-        this.responseDataList = res.data
+        responseDataList = res.data
         this.loadData({ pageNo: 0, pageSize: 10 }).then(() => {
           this.$refs.table.refresh()
         })
@@ -346,8 +348,9 @@ export default {
               // 重置表单数据
               form.resetFields()
               // 刷新表格
-              this.$refs.table.refresh()
+              // this.$refs.table.refresh()
               this.$message.info('修改成功')
+              this.queryRisk()
             })
           } else {
             // 新增
@@ -360,6 +363,7 @@ export default {
               // 刷新表格
               this.$refs.table.refresh()
               this.$message.info('新增成功')
+              this.queryRisk()
             }).error(res => {
               console.log('res', res)
               this.confirmLoading = false
