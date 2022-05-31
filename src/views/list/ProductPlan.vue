@@ -64,10 +64,10 @@
         </span>
       </s-table>
 
-      <div class="table-operator" v-if="responseRiskList.length > 0">
+      <div class="table-operator" v-if="selectedRowKeys.length > 0">
         <a-button type="primary" icon="plus" @click="handleAddInsurance">新建</a-button>
       </div>
-      <div v-if="responseRiskList.length > 0">
+      <div v-if="selectedRowKeys.length > 0">
         <s-table
           ref="productTable"
           size="default"
