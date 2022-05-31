@@ -20,6 +20,9 @@
         <a-form-item v-show="false" label="riskCode">
           <a-input v-decorator="['riskCode', {initialValue: riskCode }]" />
         </a-form-item>
+        <a-form-item v-show="false" label="productSerialNum">
+          <a-input v-decorator="['productSerialNum', {initialValue: productSerialNum }]" />
+        </a-form-item>
         <a-form-item v-show="false" label="riskName">
           <a-input v-decorator="['riskName', {initialValue: riskName }]" />
         </a-form-item>
@@ -95,6 +98,7 @@ import pick from 'lodash.pick'
 
 // 表单字段
 const fields = [
+  'productSerialNum',
   'riskSerialNum',
   'riskCode',
   'riskName',
@@ -114,6 +118,10 @@ export default {
   props: {
     visible: {
       type: Boolean,
+      required: true
+    },
+    productSerialNum: {
+      type: String,
       required: true
     },
     loading: {

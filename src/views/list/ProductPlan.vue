@@ -64,35 +64,35 @@
         </span>
       </s-table>
 
-      <div class="table-operator">
+      <div class="table-operator" v-if="responseRiskList.length > 0">
         <a-button type="primary" icon="plus" @click="handleAddInsurance">新建</a-button>
       </div>
-      <s-table
-        ref="productTable"
-        size="default"
-        rowKey="key"
-        :columns="productColumns"
-        :data="loadProductData"
-        :alert="true"
-        showPagination="true"
-      >
-        <span slot="serial" slot-scope="text, record, index">
-          {{ index + 1 }}
-        </span>
-        <span slot="status" slot-scope="text">
-          <a-badge :status="text | statusTypeFilter" :text="text | statusFilter" />
-        </span>
-        <span slot="description" slot-scope="text">
-          <ellipsis :length="4" tooltip>{{ text }}</ellipsis>
-        </span>
-
-        <span slot="action" slot-scope="text, record">
-          <template>
-            <a @click="handleEditInsurance(record)">修改</a>
-          </template>
-        </span>
-      </s-table>
-
+      <div v-if="responseRiskList.length > 0">
+        <s-table
+          ref="productTable"
+          size="default"
+          rowKey="key"
+          :columns="productColumns"
+          :data="loadProductData"
+          :alert="true"
+          showPagination="true"
+        >
+          <span slot="serial" slot-scope="text, record, index">
+            {{ index + 1 }}
+          </span>
+          <span slot="status" slot-scope="text">
+            <a-badge :status="text | statusTypeFilter" :text="text | statusFilter" />
+          </span>
+          <span slot="description" slot-scope="text">
+            <ellipsis :length="4" tooltip>{{ text }}</ellipsis>
+          </span>
+          <span slot="action" slot-scope="text, record">
+            <template>
+              <a @click="handleEditInsurance(record)">修改</a>
+            </template>
+          </span>
+        </s-table>
+      </div>
       <create-form-plan
         ref="createModal"
         :title="title"
@@ -105,6 +105,7 @@
       <create-insurance
         ref="createModalInsurance"
         :visible="insuranceVisible"
+        :productSerialNum="productSerialNum"
         :riskFlag="riskFlag"
         :options="options"
         :riskCode="riskCode"
@@ -130,7 +131,6 @@ import CreateFormPlan from './modules/CreateFormPlan'
 import CreateInsurance from './modules/CreateInsurance'
 
 let responseDataList = []
-let responseRiskList = []
 
 const columns = [
   // {
@@ -350,6 +350,8 @@ export default {
   data () {
     this.columns = columns
     this.productColumns = productColumns
+    this.productSerialNum = ''
+    this.responseRiskList = []
     return {
       // create model
       visible: false,
@@ -410,8 +412,8 @@ export default {
       loadProductData: parameter => {
         if (parameter) {
           const arrTemp = []
-          const pageNum = Math.ceil(responseRiskList.length / parameter.pageSize)
-          responseRiskList.map((item, index) => {
+          const pageNum = Math.ceil(this.responseRiskList.length / parameter.pageSize)
+          this.responseRiskList.map((item, index) => {
             if (parameter.pageNo < pageNum) {
               if (parameter.pageNo === 1 && index < parameter.pageSize) {
                 arrTemp.push(item)
@@ -428,8 +430,8 @@ export default {
           const tempData = {
             pageNo: parameter.pageNo,
             pageSize: parameter.pageSize,
-            totalCount: responseRiskList.length,
-            totalPage: Math.ceil(responseRiskList.length / parameter.pageSize),
+            totalCount: this.responseRiskList.length,
+            totalPage: Math.ceil(this.responseRiskList.length / parameter.pageSize),
             data: arrTemp
           }
           return new Promise((resolve, reject) => {
@@ -541,7 +543,13 @@ export default {
       //       return temp
       //     })
       // }
-      responseRiskList = record.riskList
+      if (record) {
+        this.productSerialNum = record.serialNum
+        this.responseRiskList = record.riskList
+      } else {
+        this.responseRiskList = []
+      }
+
       this.$refs.productTable.refresh()
     },
     rowClick (record, index) {
@@ -609,7 +617,7 @@ export default {
               // 重置表单数据
               insuranceForm.resetFields()
               // 刷新表格
-              this.$refs.table.refresh()
+              // this.$refs.table.refresh()
 
               this.$message.info('修改成功')
             })
@@ -625,6 +633,7 @@ export default {
               this.$refs.productTable.refresh()
 
               this.$message.info('新增成功')
+              this.queryProduct()
             })
           }
         } else {
